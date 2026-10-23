@@ -1,0 +1,25 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background: #f6f3ee; color: #1f2a24; }
+.wrap { max-width: 1000px; margin: 0 auto; padding: 24px 16px 60px; }
+h1 { margin: 0 0 4px; font-size: 26px; } h2 { font-size: 16px; margin: 0 0 10px; }
+.sub { margin: 0 0 20px; color: #5c6b62; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+@media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+.card { background: #fff; border: 1px solid #e3ded4; border-radius: 10px; padding: 16px; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+button { font: inherit; padding: 10px 18px; border-radius: 8px; border: 0; cursor: pointer; color: #fff; }
+button:disabled { opacity: .4; cursor: not-allowed; }
+.start { background: #2f6b4f; } .end { background: #b3392f; } .ghost { background: #6b6b6b; padding: 6px 12px; font-size: 13px; }
+.badge { padding: 6px 14px; border-radius: 999px; font-weight: 600; font-size: 14px; background: #ddd; color: #333; }
+.badge.listening { background: #d6ecff; color: #0a4d8c; } .badge.thinking { background: #fff1c9; color: #7a5a00; } .badge.speaking { background: #d9f2df; color: #1d6a35; }
+.dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: currentColor; margin-right: 8px; }
+.badge.listening .dot, .badge.speaking .dot { animation: pulse 1s infinite; }
+@keyframes pulse { 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .dot { animation: none !important; } }
+.order { border-top: 1px solid #eee; padding: 8px 0; font-size: 14px; } .order:first-of-type { border-top: 0; }
+.log { max-height: 320px; overflow-y: auto; font-size: 14px; }
+.msg { margin: 6px 0; } .msg b.user { color: #0a4d8c; } .msg b.assistant { color: #2f6b4f; } .time { color: #999; font-size: 12px; }
+.live { color: #888; font-style: italic; min-height: 20px; font-size: 14px; margin-top: 8px; }
+pre { background: #f2f0ea; padding: 12px; border-radius: 8px; overflow-x: auto; font-size: 13px; white-space: pre-wrap; }
+.err { color: #b3392f; margin-top: 10px; font-size: 14px; }
+.hint { font-size: 13px; color: #6b6b6b; margin-top: 10px; }
