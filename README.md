@@ -25,7 +25,7 @@ End Call → POST /api/summary → LLM returns JSON {customer_intent, order_id, 
 
 ```bash
 npm install
-cp .env.example .env.local   # add your free GROQ_API_KEY from console.groq.com
+cp .env.example .env.local   
 npm run dev                  # http://localhost:3000
 ```
 
@@ -33,11 +33,17 @@ Deploy: push to GitHub → import in Vercel → add `GROQ_API_KEY` env var → d
 
 ## Tell us how you think
 
-1. **Architecture and stack:** *(edit in your own words)* I used a modular STT → LLM → TTS pipeline on Next.js because it is simple to deploy, lets me see and control each step (tools, guardrails, latency), and runs fully on free tiers. Groq gives very fast inference, and browser speech APIs avoid extra vendors and network hops.
-2. **Hardest part:** *(edit with your real experience)* Making the loop feel natural: avoiding the agent hearing its own voice, handling silence and unclear audio, and keeping replies short. I solved it by pausing recognition during playback, auto-restarting listening, and a voice-specific prompt.
-3. **One more week:** Replace browser STT/TTS with streaming Deepgram + a neural Indian-voice TTS (e.g. Sarvam), add true barge-in with VAD, and stream LLM tokens into TTS sentence by sentence to cut latency.
-4. **At 1,000 calls/day:** Server-side streaming STT/TTS, a real order API with auth/OTP verification, call logging and analytics, automated eval tests for policy adherence, rate limiting and fallbacks across LLM providers, human handoff for unresolved calls, and monitoring of latency and cost per call.
+**1. Architecture and Tech Stack:**
+I built the project using a modular STT → LLM → TTS pipeline with Next.js. I chose this approach because it is easy to manage and deploy, and I can control each stage of the voice interaction. I used Groq for fast LLM responses and browser-based speech APIs for speech recognition and voice output, which helps keep the project simple and cost-effective.
 
+**2. Hardest Part:**
+The most challenging part was making the voice conversation feel natural. Sometimes the agent could hear its own voice, had trouble with silence or unclear audio, or gave lengthy responses. I handled this by pausing speech recognition while the agent was speaking, restarting listening automatically, and improving the prompt to make responses shorter and more conversational.
+
+**3. What I Would Improve With One More Week:**
+I would integrate streaming speech recognition using Deepgram and a more natural Indian voice using a service like Sarvam. I would also add voice activity detection so users can interrupt the agent while it is speaking, and stream the LLM response into speech generation in smaller parts to reduce waiting time.
+
+**4. How I Would Scale It to 1,000 Calls Per Day:**
+I would improve the system with streaming speech processing, a secure order API with OTP verification, and call logs and analytics. I would also add automated tests to check response quality, rate limits, backup LLM providers, and human support for difficult queries. Finally, I would monitor response time and cost per call to keep the system reliable and efficient.
 ## Limitations (honest notes)
 - Web Speech API works only in Chrome/Edge and accuracy varies with accents and noise. Use headphones to avoid echo.
 - Voice quality depends on the voices installed in the viewer's browser/OS.
