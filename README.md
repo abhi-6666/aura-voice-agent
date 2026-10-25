@@ -8,38 +8,21 @@ Browser-based voice support agent. Click **Start Call**, talk to Aria, get order
 
 ```mermaid
 flowchart TD
-    U([Customer]) -->|speaks| STT["Browser STT<br/>Web Speech API, en-IN"]
-    STT -->|transcribed text| UI["React UI + state machine<br/>Idle / Listening / Thinking / Speaking"]
-    UI -->|POST /api/chat<br/>conversation history| API["Next.js API route<br/>on Vercel"]
-    API -->|system prompt + history| LLM["Groq-hosted LLM<br/>openai/gpt-oss-120b"]
-    LLM -->|tool call:<br/>get_order_details| TOOL["Order tool<br/>normalise ID, errors, eligibility"]
-    TOOL --> DB[("Mock order DB<br/>ORD-101 / 102 / 103")]
-    DB --> TOOL
-    TOOL -->|tool result| LLM
-    LLM -->|reply text| API
-    API -->|reply| UI
-    UI -->|text| TTS["Browser TTS<br/>speechSynthesis, Indian English voice"]
-    TTS -->|speaks| U
-    UI -->|End Call: POST /api/summary| SUM["Summary route"]
-    SUM -->|transcript| LLM2["Groq LLM<br/>JSON mode"]
-    LLM2 -->|intent, order_id,<br/>status, summary| OUT["Post-call transcript + JSON outcome"]
-``````mermaid
-flowchart TD
-    U([Customer]) -->|speaks| STT["Browser STT<br/>Web Speech API, en-IN"]
-    STT -->|transcribed text| UI["React UI + state machine<br/>Idle / Listening / Thinking / Speaking"]
-    UI -->|POST /api/chat<br/>conversation history| API["Next.js API route<br/>on Vercel"]
-    API -->|system prompt + history| LLM["Groq-hosted LLM<br/>openai/gpt-oss-120b"]
-    LLM -->|tool call:<br/>get_order_details| TOOL["Order tool<br/>normalise ID, errors, eligibility"]
-    TOOL --> DB[("Mock order DB<br/>ORD-101 / 102 / 103")]
-    DB --> TOOL
-    TOOL -->|tool result| LLM
-    LLM -->|reply text| API
-    API -->|reply| UI
-    UI -->|text| TTS["Browser TTS<br/>speechSynthesis, Indian English voice"]
-    TTS -->|speaks| U
-    UI -->|End Call: POST /api/summary| SUM["Summary route"]
-    SUM -->|transcript| LLM2["Groq LLM<br/>JSON mode"]
-    LLM2 -->|intent, order_id,<br/>status, summary| OUT["Post-call transcript + JSON outcome"]
+    A([Customer speaks]) --> B[Browser STT - Web Speech API]
+    B --> C[React UI - state machine]
+    C -->|POST /api/chat| D[Next.js API route on Vercel]
+    D -->|system prompt and history| E[Groq LLM - openai/gpt-oss-120b]
+    E -->|tool call| F[get_order_details]
+    F --> G[(Mock order DB)]
+    G --> F
+    F -->|tool result| E
+    E -->|reply text| D
+    D --> C
+    C --> H[Browser TTS - speechSynthesis]
+    H --> I([Customer hears Aria])
+    C -->|End Call| J[/api/summary]
+    J --> K[Groq LLM - JSON mode]
+    K --> L[Transcript and JSON outcome]
 ```
 - **State machine:** idle → listening → thinking → speaking, shown live in the UI.
 - **Tool calling:** the LLM decides when to call `get_order_details`. The server normalises IDs ("order 101" → ORD-101), returns `NOT_FOUND` / `MISSING_OR_INVALID_FORMAT` errors, and adds eligibility data (can_cancel, return window) so the model doesn't have to compute dates.
