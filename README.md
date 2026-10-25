@@ -35,8 +35,6 @@ Deploy: push to GitHub → import in Vercel → add `GROQ_API_KEY` env var → d
 
 ## Tell us how you think
 
-## Tell us how you think
-
 ### 1. Why did you choose your particular architecture and technology stack?
 I split the voice agent into three simple steps: the browser listens to the customer and turns speech into text, an AI model decides what to reply (and looks up the order if needed), and the browser reads the reply out loud. I chose this because it's easy to understand and debug. If something goes wrong, I can see exactly which step failed. I used Next.js because the website and the backend sit in one project, and my API key stays safely on the server. I used Groq because it's free and replies quickly, which matters on a voice call. The whole thing costs nothing to run, which suited this assignment.
 
