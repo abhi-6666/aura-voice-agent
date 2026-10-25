@@ -2,13 +2,13 @@
 
 Browser-based voice support agent. Click **Start Call**, talk to Aria, get order info and policy answers, then see a transcript and a structured JSON summary when the call ends.
 
-**Live demo:** <your-vercel-url>  ·  Use Chrome or Edge (Web Speech API).
+**Live demo:**https://aura-voice-agent-omega.vercel.app/  ·  Use Chrome or Edge (Web Speech API).
 
 ## Architecture
 
 ```
 Mic → Browser SpeechRecognition (STT, en-IN)
-        → POST /api/chat → Groq Llama 3.3 70B (system prompt + guardrails)
+        → POST /api/chat → openai/gpt-oss-120b (system prompt + guardrails)
                               ↳ tool call get_order_details(order_id) → mock order DB → result back to LLM
         ← reply text → Browser speechSynthesis (TTS, Indian English voice) → Speakers
 End Call → POST /api/summary → LLM returns JSON {customer_intent, order_id, resolution_status, call_summary}
@@ -33,17 +33,23 @@ Deploy: push to GitHub → import in Vercel → add `GROQ_API_KEY` env var → d
 
 ## Tell us how you think
 
-**1. Architecture and Tech Stack:**
-I built the project using a modular STT → LLM → TTS pipeline with Next.js. I chose this approach because it is easy to manage and deploy, and I can control each stage of the voice interaction. I used Groq for fast LLM responses and browser-based speech APIs for speech recognition and voice output, which helps keep the project simple and cost-effective.
+## Tell us how you think
 
-**2. Hardest Part:**
-The most challenging part was making the voice conversation feel natural. Sometimes the agent could hear its own voice, had trouble with silence or unclear audio, or gave lengthy responses. I handled this by pausing speech recognition while the agent was speaking, restarting listening automatically, and improving the prompt to make responses shorter and more conversational.
+### 1. Why did you choose your particular architecture and technology stack?
+I split the voice agent into three simple steps: the browser listens to the customer and turns speech into text, an AI model decides what to reply (and looks up the order if needed), and the browser reads the reply out loud. I chose this because it's easy to understand and debug. If something goes wrong, I can see exactly which step failed. I used Next.js because the website and the backend sit in one project, and my API key stays safely on the server. I used Groq because it's free and replies quickly, which matters on a voice call. The whole thing costs nothing to run, which suited this assignment.
 
-**3. What I Would Improve With One More Week:**
-I would integrate streaming speech recognition using Deepgram and a more natural Indian voice using a service like Sarvam. I would also add voice activity detection so users can interrupt the agent while it is speaking, and stream the LLM response into speech generation in smaller parts to reduce waiting time.
+### 2. What was the most difficult part of the assignment, and how did you solve it?
+The hardest part was making the whole thing work reliably once it was deployed, not just on my laptop. My first AI model gave a "model not found" error, and the app only said "technical issue". I found the real problem by reading the error logs, and then I made the model name a setting (`GROQ_MODEL`) so I could change it without touching the code. I switched to `openai/gpt-oss-120b`. I also had to turn off Vercel's login protection so evaluators can open the app without signing in. Another challenge was stopping the agent from hearing its own voice, so I pause listening while it speaks.
 
-**4. How I Would Scale It to 1,000 Calls Per Day:**
-I would improve the system with streaming speech processing, a secure order API with OTP verification, and call logs and analytics. I would also add automated tests to check response quality, rate limits, backup LLM providers, and human support for difficult queries. Finally, I would monitor response time and cost per call to keep the system reliable and efficient.
+### 3. If you had one more week, what would you improve first and why?
+I would improve the voice quality and speed first, because that's what a customer notices immediately. Right now the voice depends on the browser, so it sounds different on different computers. I would use a better speech-to-text service and a natural Indian-sounding voice. I would also let customers interrupt Aria while she's speaking, and start speaking as soon as the first sentence is ready, so there are fewer awkward pauses.
+
+### 4. Imagine this agent is handling 1,000 customer conversations a day. What would need to change or improve?
+- Connect it to the real order system instead of my mock data, and verify the customer (for example with an OTP) before sharing order details.
+- Move speech processing to the server so quality doesn't depend on each customer's browser.
+- Save call logs and track things like response time, cost per call, and how many issues get resolved.
+- Add automatic tests to check the agent follows the policies, so a prompt change can't break them.
+- Add backups if the AI service goes down, and a way to hand tricky calls to a human.
 ## Limitations (honest notes)
 - Web Speech API works only in Chrome/Edge and accuracy varies with accents and noise. Use headphones to avoid echo.
 - Voice quality depends on the voices installed in the viewer's browser/OS.
