@@ -6,24 +6,16 @@ Browser-based voice support agent. Click **Start Call**, talk to Aria, get order
 
 ## Architecture
 
-```mermaid
-flowchart TD
-    A([Customer speaks]) --> B[Browser STT - Web Speech API]
-    B --> C[React UI - state machine]
-    C -->|POST /api/chat| D[Next.js API route on Vercel]
-    D -->|system prompt and history| E[Groq LLM - openai/gpt-oss-120b]
-    E -->|tool call| F[get_order_details]
-    F --> G[(Mock order DB)]
-    G --> F
-    F -->|tool result| E
-    E -->|reply text| D
-    D --> C
-    C --> H[Browser TTS - speechSynthesis]
-    H --> I([Customer hears Aria])
-    C -->|End Call| J[/api/summary]
-    J --> K[Groq LLM - JSON mode]
-    K --> L[Transcript and JSON outcome]
-```
+CLIENT (browser)
+  Mic -> STT (Web Speech API) -> React UI (state machine) -> TTS (speechSynthesis) -> Speakers
+
+SERVER (Next.js on Vercel)
+  /api/chat    -> system prompt + history -> LLM -> tool loop -> reply
+  /api/summary -> transcript -> LLM (JSON mode) -> structured outcome
+
+AI + TOOLS
+  Groq openai/gpt-oss-120b -> get_order_details(order_id) -> Mock order DB
+
 - **State machine:** idle → listening → thinking → speaking, shown live in the UI.
 - **Tool calling:** the LLM decides when to call `get_order_details`. The server normalises IDs ("order 101" → ORD-101), returns `NOT_FOUND` / `MISSING_OR_INVALID_FORMAT` errors, and adds eligibility data (can_cancel, return window) so the model doesn't have to compute dates.
 - **Guardrails:** brand policies are the only source of truth in the system prompt, with explicit rules: no promises outside policy, Aura-only scope, admit when unsure, ask to repeat when unclear, never guess an order ID.
