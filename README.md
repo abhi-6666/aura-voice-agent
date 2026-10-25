@@ -6,14 +6,41 @@ Browser-based voice support agent. Click **Start Call**, talk to Aria, get order
 
 ## Architecture
 
+```mermaid
+flowchart TD
+    U([Customer]) -->|speaks| STT["Browser STT<br/>Web Speech API, en-IN"]
+    STT -->|transcribed text| UI["React UI + state machine<br/>Idle / Listening / Thinking / Speaking"]
+    UI -->|POST /api/chat<br/>conversation history| API["Next.js API route<br/>on Vercel"]
+    API -->|system prompt + history| LLM["Groq-hosted LLM<br/>openai/gpt-oss-120b"]
+    LLM -->|tool call:<br/>get_order_details| TOOL["Order tool<br/>normalise ID, errors, eligibility"]
+    TOOL --> DB[("Mock order DB<br/>ORD-101 / 102 / 103")]
+    DB --> TOOL
+    TOOL -->|tool result| LLM
+    LLM -->|reply text| API
+    API -->|reply| UI
+    UI -->|text| TTS["Browser TTS<br/>speechSynthesis, Indian English voice"]
+    TTS -->|speaks| U
+    UI -->|End Call: POST /api/summary| SUM["Summary route"]
+    SUM -->|transcript| LLM2["Groq LLM<br/>JSON mode"]
+    LLM2 -->|intent, order_id,<br/>status, summary| OUT["Post-call transcript + JSON outcome"]
+``````mermaid
+flowchart TD
+    U([Customer]) -->|speaks| STT["Browser STT<br/>Web Speech API, en-IN"]
+    STT -->|transcribed text| UI["React UI + state machine<br/>Idle / Listening / Thinking / Speaking"]
+    UI -->|POST /api/chat<br/>conversation history| API["Next.js API route<br/>on Vercel"]
+    API -->|system prompt + history| LLM["Groq-hosted LLM<br/>openai/gpt-oss-120b"]
+    LLM -->|tool call:<br/>get_order_details| TOOL["Order tool<br/>normalise ID, errors, eligibility"]
+    TOOL --> DB[("Mock order DB<br/>ORD-101 / 102 / 103")]
+    DB --> TOOL
+    TOOL -->|tool result| LLM
+    LLM -->|reply text| API
+    API -->|reply| UI
+    UI -->|text| TTS["Browser TTS<br/>speechSynthesis, Indian English voice"]
+    TTS -->|speaks| U
+    UI -->|End Call: POST /api/summary| SUM["Summary route"]
+    SUM -->|transcript| LLM2["Groq LLM<br/>JSON mode"]
+    LLM2 -->|intent, order_id,<br/>status, summary| OUT["Post-call transcript + JSON outcome"]
 ```
-Mic → Browser SpeechRecognition (STT, en-IN)
-        → POST /api/chat → openai/gpt-oss-120b (system prompt + guardrails)
-                              ↳ tool call get_order_details(order_id) → mock order DB → result back to LLM
-        ← reply text → Browser speechSynthesis (TTS, Indian English voice) → Speakers
-End Call → POST /api/summary → LLM returns JSON {customer_intent, order_id, resolution_status, call_summary}
-```
-
 - **State machine:** idle → listening → thinking → speaking, shown live in the UI.
 - **Tool calling:** the LLM decides when to call `get_order_details`. The server normalises IDs ("order 101" → ORD-101), returns `NOT_FOUND` / `MISSING_OR_INVALID_FORMAT` errors, and adds eligibility data (can_cancel, return window) so the model doesn't have to compute dates.
 - **Guardrails:** brand policies are the only source of truth in the system prompt, with explicit rules: no promises outside policy, Aura-only scope, admit when unsure, ask to repeat when unclear, never guess an order ID.
